@@ -1,0 +1,17 @@
+name: Windows RDP
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Enable RDP
+        run: |
+          net user winmine /add
+          net user winmine Wm@24$
+          net localgroup administrators winmine /add
+          reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+          Enable-PSRemoting -Force
+          Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          Restart-Computer -Force
