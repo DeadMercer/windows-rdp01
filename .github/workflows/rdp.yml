@@ -29,9 +29,7 @@ jobs:
           Start-Process -FilePath $RustDeskPath -ArgumentList "--service start" -NoNewWindow -Wait
           Write-Output "RustDesk is running in service mode..."
           
-          # Keep RustDesk alive
-          while ($true) { Start-Sleep -Seconds 3600 }
-        shell: pwsh
+          
       
       - name: Set Custom RustDesk ID and Password
         run: |
