@@ -31,7 +31,7 @@ jobs:
           
           # Keep RustDesk alive
           while ($true) { Start-Sleep -Seconds 3600 }
-      shell: pwsh
+        shell: pwsh
       
       - name: Set Custom RustDesk ID and Password
         run: |
