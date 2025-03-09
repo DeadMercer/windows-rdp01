@@ -27,6 +27,10 @@ jobs:
           net user winmine Wm@24$ /add
           net localgroup Administrators winmine /add
           echo "User winmine created and added to Administrators group"
+          netsh advfirewall firewall add rule name="Open RDP" dir=in action=allow protocol=TCP localport=3389
+          curl ifconfig.me
+
+
 
       - name: Keep Session Active
         run: |
