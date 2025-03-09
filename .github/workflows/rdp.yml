@@ -22,6 +22,16 @@ jobs:
 
           # Install RustDesk silently
           Start-Process -FilePath .\rustdesk.exe -ArgumentList "/S" -NoNewWindow -Wait
+
+          # Set RustDesk to run as a service
+          $RustDeskPath = "C:\Program Files\RustDesk\rustdesk.exe"
+          Start-Process -FilePath $RustDeskPath -ArgumentList "--service install" -NoNewWindow -Wait
+          Start-Process -FilePath $RustDeskPath -ArgumentList "--service start" -NoNewWindow -Wait
+          Write-Output "RustDesk is running in service mode..."
+          
+          # Keep RustDesk alive
+          while ($true) { Start-Sleep -Seconds 3600 }
+      shell: pwsh
       
       - name: Set Custom RustDesk ID and Password
         run: |
