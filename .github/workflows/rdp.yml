@@ -1,38 +1,49 @@
-name: Windows - Persistent RDP
+name: Windows - RustDesk
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    name: Start RDP Session
+    name: Start RustDesk Session
     runs-on: windows-latest
-    timeout-minutes: 9999  # Ensures the workflow runs indefinitely
-
+    timeout-minutes: 9999
+    
     steps:
-      - name: Get Public IP Address
+      - name: Download and Install RustDesk
         run: |
-          echo "Fetching Public IP..."
-          curl ifconfig.me > ip.txt
-          echo "Public IP Address: $(cat ip.txt)"
-
-      - name: Enable Remote Desktop (RDP)
+          Invoke-WebRequest -Uri "https://github.com/rustdesk/rustdesk/releases/download/1.2.2/rustdesk-1.2.2-windows_x64.exe" -OutFile "rustdesk.exe"
+          Start-Process -FilePath .\rustdesk.exe -ArgumentList "/S" -NoNewWindow -Wait
+      
+      - name: Set Custom RustDesk ID and Password
         run: |
-          reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-          netsh advfirewall firewall set rule group="Remote Desktop" new enable=Yes
-          echo "RDP Enabled Successfully"
+          $CustomID = "244-544-006"
+          $CustomPassword = "Wmine@24$"
+          $ConfigPath = "$env:APPDATA\RustDesk\config\RustDesk.toml"
+          
+          # Create RustDesk config folder if it doesn’t exist
+          if (!(Test-Path "$env:APPDATA\RustDesk\config")) {
+              New-Item -ItemType Directory -Path "$env:APPDATA\RustDesk\config"
+          }
 
-      - name: Create and Configure RDP User
+          # Write custom ID and password to config file
+          Set-Content -Path $ConfigPath -Value @"
+          [network]
+          id = "$CustomID"
+          password = "$CustomPassword"
+          "@
+
+      - name: Start RustDesk Service with Custom ID
         run: |
-          net user winmine Wm@24$ /add
-          net localgroup Administrators winmine /add
-          echo "User winmine created and added to Administrators group"
-          netsh advfirewall firewall add rule name="Open RDP" dir=in action=allow protocol=TCP localport=3389
-          curl ifconfig.me
+          Start-Process -FilePath "C:\Program Files\RustDesk\rustdesk.exe"
+          Start-Sleep -Seconds 10
 
-
-
-      - name: Keep Session Active
+      - name: Display Custom ID and Password
         run: |
-          echo "Keeping RDP session alive..."
+          echo "Custom RustDesk ID: 987-654-321"
+          echo "Custom RustDesk Password: MySecurePass123"
+          echo "Use this ID and Password to connect via RustDesk"
+
+      - name: Keep Session Alive
+        run: |
           while ($true) { Start-Sleep -Seconds 3600 }
