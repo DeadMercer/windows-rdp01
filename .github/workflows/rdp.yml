@@ -1,17 +1,34 @@
-name: Windows RDP
-on: workflow_dispatch
+name: Windows - Persistent RDP
+
+on:
+  workflow_dispatch:
 
 jobs:
   build:
+    name: Start RDP Session
     runs-on: windows-latest
+    timeout-minutes: 9999  # Ensures the workflow runs indefinitely
+
     steps:
-      - name: Enable RDP
+      - name: Get Public IP Address
         run: |
-          net user winmine /add
-          net user winmine Wm@24$
-          net localgroup administrators winmine /add
+          echo "Fetching Public IP..."
+          curl ifconfig.me > ip.txt
+          echo "Public IP Address: $(cat ip.txt)"
+
+      - name: Enable Remote Desktop (RDP)
+        run: |
           reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
-          Enable-PSRemoting -Force
-          Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 0
-          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-          Restart-Computer -Force
+          netsh advfirewall firewall set rule group="Remote Desktop" new enable=Yes
+          echo "RDP Enabled Successfully"
+
+      - name: Create and Configure RDP User
+        run: |
+          net user winmine Wm@24$ /add
+          net localgroup Administrators winmine /add
+          echo "User winmine created and added to Administrators group"
+
+      - name: Keep Session Active
+        run: |
+          echo "Keeping RDP session alive..."
+          while ($true) { Start-Sleep -Seconds 3600 }
