@@ -10,10 +10,19 @@ jobs:
     timeout-minutes: 9999
     
     steps:
-      - name: Download and Install RustDesk
-        run: |
-          Invoke-WebRequest -Uri "https://github.com/rustdesk/rustdesk/releases/download/1.2.2/rustdesk-1.2.2-windows_x64.exe" -OutFile "rustdesk.exe"
+     - name: Download and Install RustDesk
+       run: |
+          $RustDeskURL = "https://github.com/rustdesk/rustdesk/releases/download/1.3.8/rustdesk-1.3.8-x86_64.exe"
+          $RustDeskFile = "rustdesk.exe"
+
+# Download RustDesk using a custom User-Agent to avoid GitHub blocks
+          $WebClient = New-Object System.Net.WebClient 
+          $WebClient.Headers.Add("User-Agent", "Mozilla/5.0")
+          $WebClient.DownloadFile($RustDeskURL, $RustDeskFile)
+
+# Install RustDesk silently
           Start-Process -FilePath .\rustdesk.exe -ArgumentList "/S" -NoNewWindow -Wait
+
       
       - name: Set Custom RustDesk ID and Password
         run: |
